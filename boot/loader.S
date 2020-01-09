@@ -163,8 +163,80 @@ p_mode_start:
 	mov ax, SELECTOR_VIDEO
 	mov gs, ax
 	
-	mov byte[gs:320], 'P'
-	mov byte[gs:321], 0x94
+;======== 分 3 步开启分页机制 ========================================	
+; 第 1 步： 创建页目录表 和 页表
+	call setup_page			; 创建二级页表
+	
+; -------------修改 GDT 里的段描述符----------------
+	sgdt [gdt_ptr]
+	
+	mov ebx, [gdt_ptr + 2]		; 描述符表的偏移
+	or dword [ebx + 0x18 + 4], 0xc0000000
+	
+	add dword [gdt_ptr + 2], 0xc0000000
+	
+	add esp, 0xc0000000
+
+; 第 2 步: 页目录表的地址赋给 cr3
+	mov eax, PAGE_DIR_TABLE_POS
+	mov cr3, eax
+; 第 3 步: 打开 cr0 的 PG 位开启分页
+	mov eax, cr0
+	or eax, 0x80000000
+	mov cr0, eax
+	
+	lgdt [gdt_ptr]			; 开启分页后重新加载 GDT
+	
+	mov byte [gs:320], 'V'
+	mov byte [gs:321], 0x97
 	
 	jmp $
 
+; =========== 创建页目录表和页表 函数 ======================================
+setup_page:
+	mov ecx, 4096
+	mov esi, 0
+.clear_page_dir:
+	mov byte [PAGE_DIR_TABLE_POS + esi], 0	; PAGE_DIR_TABLE_POS = 1M ,页目录表放在内存的1M处
+	inc esi
+	loop .clear_page_dir					; 把页目录表 (4K) 清0
+
+; 开始创建页目录项（PDE）page direcotry entry
+.creat_pde:
+	mov eax, PAGE_DIR_TABLE_POS
+	add eax, 0x1000							; 加 4K ,此时eax为第一个页表的位置及属性
+	mov ebx, eax
+	
+	or eax, PG_US_U | PG_RW_W | PG_P
+	mov [PAGE_DIR_TABLE_POS + 0x0], eax		; 页目录表的第 1 项存为第一个页表的地址
+	mov [PAGE_DIR_TABLE_POS + 0xc00], eax	; 页目录表的第 768 项存为第一个页表的地址
+	
+	sub eax, 0x1000
+	mov [PAGE_DIR_TABLE_POS + 4092], eax	; 最后一个页目录项指向自己页目录表的地址
+	
+; 创建页表项
+	mov ecx, 256
+	mov esi, 0
+	mov edx, PG_US_U | PG_RW_W | PG_P
+.creat_pte:
+	mov [ebx + esi * 4], edx
+	add edx, 4096
+	inc esi
+	loop .creat_pte
+	
+; 创建内核其它页表的 PTE
+	mov eax, PAGE_DIR_TABLE_POS
+	add eax, 0x2000
+	or eax, PG_US_U | PG_RW_W | PG_P
+	mov ebx, PAGE_DIR_TABLE_POS
+	mov ecx, 254
+	mov esi, 769
+.creat_kernel_pde
+	mov [PAGE_DIR_TABLE_POS + esi*4], eax
+	add eax, 0x1000
+	inc esi
+	loop .creat_kernel_pde
+	ret
+	
+	
+	
