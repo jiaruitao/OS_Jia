@@ -12,7 +12,7 @@ hd:
 	dd if=mbr.bin of=/home/book/bochs/bochs-2.6.9/OS_Jia.img bs=512 count=1 conv=notrunc
 
 hd_loader:
-	dd if=loader.bin of=/home/book/bochs/bochs-2.6.9/OS_Jia.img bs=512 count=1 seek=2 conv=notrunc
+	dd if=loader.bin of=/home/book/bochs/bochs-2.6.9/OS_Jia.img bs=512 count=4 seek=2 conv=notrunc
 clean:
 	rm -f *.bin
 

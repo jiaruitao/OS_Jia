@@ -52,7 +52,7 @@ SECTION MBR vstart=0x7c00		;告诉编译器，起始地址编译为0x7c00
 ; 硬盘读取函数的调用 ==========================================================
 	mov eax, LOADER_START_SECTOR	; 起始扇区 LBA 地址
 	mov bx, LOADER_BASE_ADDR		; 写入的地址
-	mov cx, 1						; 读 1 个扇区
+	mov cx, 4						; 读 4 个扇区
 	call rd_disk_m_16
 	
 	jmp LOADER_BASE_ADDR			; 跳到 loader.S 执行
