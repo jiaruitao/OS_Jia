@@ -13,6 +13,7 @@ Linker script and memory map
 
 Address of section .text set to 0xc0001500
 LOAD build/main.o
+LOAD build/print.o
                 [!provide]                        PROVIDE (__executable_start, 0x8048000)
                 0x0000000008048074                . = (0x8048000 + SIZEOF_HEADERS)
 
@@ -43,9 +44,10 @@ LOAD build/main.o
 .gnu.version_r
  *(.gnu.version_r)
 
-.rel.dyn
+.rel.dyn        0x0000000008048074        0x0
  *(.rel.init)
  *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*)
+ .rel.text      0x0000000008048074        0x0 build/main.o
  *(.rel.fini)
  *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*)
  *(.rel.data.rel.ro .rel.data.rel.ro.* .rel.gnu.linkonce.d.rel.ro.*)
@@ -62,26 +64,31 @@ LOAD build/main.o
  *(.rel.plt)
                 [!provide]                        PROVIDE (__rel_iplt_start, .)
  *(.rel.iplt)
+ .rel.iplt      0x0000000008048074        0x0 build/main.o
                 [!provide]                        PROVIDE (__rel_iplt_end, .)
 
 .init
  *(SORT(.init))
 
-.plt
+.plt            0x0000000008048080        0x0
  *(.plt)
  *(.iplt)
+ .iplt          0x0000000008048080        0x0 build/main.o
 
 .plt.got
  *(.plt.got)
 
-.text           0x00000000c0001500        0x5
+.text           0x00000000c0001500      0x14d
  *(.text.unlikely .text.*_unlikely .text.unlikely.*)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
  *(.text.hot .text.hot.*)
  *(.text .stub .text.* .gnu.linkonce.t.*)
- .text          0x00000000c0001500        0x5 build/main.o
+ .text          0x00000000c0001500       0x7b build/main.o
                 0x00000000c0001500                main
+ *fill*         0x00000000c000157b        0x5 
+ .text          0x00000000c0001580       0xcd build/print.o
+                0x00000000c0001580                put_char
  *(.gnu.warning)
 
 .fini
@@ -100,9 +107,9 @@ LOAD build/main.o
  *(.eh_frame_hdr)
  *(.eh_frame_entry .eh_frame_entry.*)
 
-.eh_frame       0x00000000c0001508       0x34
+.eh_frame       0x00000000c0001650       0x3c
  *(.eh_frame)
- .eh_frame      0x00000000c0001508       0x34 build/main.o
+ .eh_frame      0x00000000c0001650       0x3c build/main.o
  *(.eh_frame.*)
 
 .gcc_except_table
@@ -113,7 +120,7 @@ LOAD build/main.o
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x00000000c000253c                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
+                0x00000000c000268c                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
 
 .eh_frame
  *(.eh_frame)
@@ -135,18 +142,18 @@ LOAD build/main.o
  *(.tbss .tbss.* .gnu.linkonce.tb.*)
  *(.tcommon)
 
-.preinit_array  0x00000000c000253c        0x0
+.preinit_array  0x00000000c000268c        0x0
                 [!provide]                        PROVIDE (__preinit_array_start, .)
  *(.preinit_array)
                 [!provide]                        PROVIDE (__preinit_array_end, .)
 
-.init_array     0x00000000c000253c        0x0
+.init_array     0x00000000c000268c        0x0
                 [!provide]                        PROVIDE (__init_array_start, .)
  *(SORT(.init_array.*) SORT(.ctors.*))
  *(.init_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .ctors)
                 [!provide]                        PROVIDE (__init_array_end, .)
 
-.fini_array     0x00000000c000253c        0x0
+.fini_array     0x00000000c000268c        0x0
                 [!provide]                        PROVIDE (__fini_array_start, .)
  *(SORT(.fini_array.*) SORT(.dtors.*))
  *(.fini_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .dtors)
@@ -179,35 +186,36 @@ LOAD build/main.o
 .got
  *(.got)
  *(.igot)
-                0x00000000c000253c                . = DATA_SEGMENT_RELRO_END (., (SIZEOF (.got.plt) >= 0xc)?0xc:0x0)
+                0x00000000c000268c                . = DATA_SEGMENT_RELRO_END (., (SIZEOF (.got.plt) >= 0xc)?0xc:0x0)
 
-.got.plt        0x00000000c000253c        0x0
+.got.plt        0x00000000c000268c        0x0
  *(.got.plt)
  *(.igot.plt)
+ .igot.plt      0x00000000c000268c        0x0 build/main.o
 
-.data           0x00000000c000253c        0x0
+.data           0x00000000c000268c        0x0
  *(.data .data.* .gnu.linkonce.d.*)
- .data          0x00000000c000253c        0x0 build/main.o
+ .data          0x00000000c000268c        0x0 build/main.o
 
 .data1
  *(.data1)
-                0x00000000c000253c                _edata = .
+                0x00000000c000268c                _edata = .
                 [!provide]                        PROVIDE (edata, .)
-                0x00000000c000253c                . = .
-                0x00000000c000253c                __bss_start = .
+                0x00000000c000268c                . = .
+                0x00000000c000268c                __bss_start = .
 
-.bss            0x00000000c000253c        0x0
+.bss            0x00000000c000268c        0x0
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
- .bss           0x00000000c000253c        0x0 build/main.o
+ .bss           0x00000000c000268c        0x0 build/main.o
  *(COMMON)
-                0x00000000c000253c                . = ALIGN ((. != 0x0)?0x4:0x1)
-                0x00000000c000253c                . = ALIGN (0x4)
-                0x00000000c000253c                . = SEGMENT_START ("ldata-segment", .)
-                0x00000000c000253c                . = ALIGN (0x4)
-                0x00000000c000253c                _end = .
+                0x00000000c000268c                . = ALIGN ((. != 0x0)?0x4:0x1)
+                0x00000000c000268c                . = ALIGN (0x4)
+                0x00000000c000268c                . = SEGMENT_START ("ldata-segment", .)
+                0x00000000c000268c                . = ALIGN (0x4)
+                0x00000000c000268c                _end = .
                 [!provide]                        PROVIDE (end, .)
-                0x00000000c000253c                . = DATA_SEGMENT_END (.)
+                0x00000000c000268c                . = DATA_SEGMENT_END (.)
 
 .stab
  *(.stab)
