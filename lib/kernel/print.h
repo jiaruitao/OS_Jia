@@ -3,5 +3,5 @@
 #include "../std_int.h"
 void put_char(uint8_t char_asci);
 void put_str(uint8_t* str);
-
+void put_int(uint32_t num);
 #endif
