@@ -59,3 +59,7 @@ mbr.S 添加读硬盘的函数，把第二扇区里的loader读到0x9000处，�
 #### 13. 实现 ASSERT 断言
 
 添加文件debug.h 和 debug.c 实现 ASSERT。
+
+#### 14. 实现字符串操作函数
+
+添加文件 string.h 和 string.c 实现字符串操作的一系列函数。
