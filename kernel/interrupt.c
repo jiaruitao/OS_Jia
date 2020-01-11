@@ -11,8 +11,12 @@
 #define PIC_S_CTRL	0xa0		// 从片 控制
 #define PIC_S_DATA	0xa1		// 从片 数据
 
+#define EFLAGS_IF 0x00000200
+#define GET_EFLAGS(EFLAG_VAR) asm volatile ("pushfl; popl %0" : "=g" (EFLAG_VAR))
+
 extern void lodidt(uint16_t, uint32_t);
-// 初始化 8259A
+
+/* ******************** 初始化 8259A *********************************/
 static void pic_init(void)			
 {
 	outb(PIC_M_CTRL, 0x11);
@@ -110,7 +114,7 @@ static void exception_init(void) {			    // 完成一般中断处理函数注册
 
 }
 
-
+/* *************** 中断初始化 *********************************/
 void idt_init(void)
 {
 	put_str("idt init start\n");
@@ -123,4 +127,44 @@ void idt_init(void)
 	lodidt((uint16_t)(sizeof(idt) - 1), (uint32_t)(&idt));
 	
 	put_str("idt init done\n");
+}
+
+/* 开中断 */
+enum intr_status intr_enable(void)
+{
+	enum intr_status old_status;
+	if (INTR_ON == intr_get_status()){
+		old_status = INTR_ON;
+		return old_status;
+	} else {
+		old_status = INTR_OFF;
+		asm volatile ("sti");
+		return old_status;
+	}
+}
+
+/* 关中断 */
+enum intr_status intr_disable(void)
+{
+	enum intr_status old_status;
+	if (INTR_ON == intr_get_status()){
+		old_status = INTR_ON;
+		asm volatile ("cli" : : : "memory");
+		return old_status;
+	} else {
+		old_status = INTR_OFF;
+		return old_status;
+	}
+}
+
+enum intr_status intr_set_status(enum intr_status status)
+{
+	return status &	INTR_ON ?  intr_enable() : intr_disable();
+}
+/* 获取中断的状态 */
+enum intr_status intr_get_status(void)
+{
+	uint32_t eflags = 0;
+	GET_EFLAGS(eflags);
+	return (EFLAGS_IF & eflags) ? INTR_ON : INTR_OFF;
 }
