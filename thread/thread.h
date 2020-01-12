@@ -2,6 +2,7 @@
 #define __THREAD_H__
 
 #include "../lib/std_int.h"
+#include "../lib/kernel/list.h"
 
 
 
@@ -58,9 +59,18 @@ struct task_struct{
 	enum task_status status;
 	uint8_t priority;			// 线程优先级
 	char name[16];				// 线程名字
+	uint8_t ticks;
+	uint32_t elapsed_ticks;
+	struct list_elem general_tag;
+	struct list_elem all_list_tag;
+	uint32_t* pgdir;
 	uint32_t stack_magic;		// 栈的标记，检测溢出
 };
 
 struct task_struct* thread_start(char* name, int prio, thread_func* function, void* func_arg);
+struct task_struct* running_thread(void);
+void schedule(void);
+void thread_init(void);
+
 
 #endif

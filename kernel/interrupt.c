@@ -16,6 +16,7 @@
 
 extern void lodidt(uint16_t, uint32_t);
 
+
 /* ******************** 初始化 8259A *********************************/
 static void pic_init(void)			
 {
@@ -79,6 +80,8 @@ static void general_intr_handler(uint8_t vec_nr) {
    put_str("int vector: 0x");
    put_int(vec_nr);
    put_char('\n');
+   
+   while(1);
 }
 /* 完成一般中断处理函数注册及异常名称注册 */
 static void exception_init(void) {			    // 完成一般中断处理函数注册及异常名称注册
@@ -113,6 +116,15 @@ static void exception_init(void) {			    // 完成一般中断处理函数注册
    intr_name[19] = "#XF SIMD Floating-Point Exception";
 
 }
+
+
+/* 中断处理程序注册函数 */
+void register_handler(uint8_t vector_no, intr_handler function)
+{
+	idt_table[vector_no] = function;
+}
+
+
 
 /* *************** 中断初始化 *********************************/
 void idt_init(void)
