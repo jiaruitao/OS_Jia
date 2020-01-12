@@ -8,9 +8,8 @@ int main(void)
 {
 	put_str("I am kernel!\n");
 	init_all();
-	intr_enable();
+	intr_disable();
 	
-	ASSERT(1 == 2);
 	
 	while (1);
 	return 0;

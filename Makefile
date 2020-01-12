@@ -9,7 +9,7 @@ ASFLAGS = -f elf
 LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main -Map $(BUILD_DIR)/kernel.map
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/init.o $(BUILD_DIR)/print.o \
 		$(BUILD_DIR)/interrupt.o $(BUILD_DIR)/io.o $(BUILD_DIR)/debug.o $(BUILD_DIR)/string.o \
-		$(BUILD_DIR)/bitmap.o
+		$(BUILD_DIR)/memory.o $(BUILD_DIR)/bitmap.o
 
 ############   C 代码编译  #################
 $(BUILD_DIR)/main.o: kernel/main.c kernel/interrupt.c kernel/init.c
@@ -31,6 +31,9 @@ $(BUILD_DIR)/string.o: lib/string.c	kernel/global.h lib/string.h lib/std_int.h
 	$(CC) $(CFLAGS) $< -o $@
 	
 $(BUILD_DIR)/bitmap.o: lib/kernel/bitmap.c lib/kernel/bitmap.h kernel/global.h lib/string.h lib/std_int.h
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/memory.o: kernel/memory.c kernel/memory.h lib/kernel/bitmap.c lib/kernel/bitmap.h
 	$(CC) $(CFLAGS) $< -o $@
 
 ############   汇编代码编译  #################
