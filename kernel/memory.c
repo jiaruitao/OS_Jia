@@ -1,6 +1,13 @@
 #include "memory.h"
 #include "../lib/std_int.h"
 #include "../lib/kernel/print.h"
+#include "../lib/kernel/bitmap.h"
+#include "global.h"
+#include "debug.h"
+#include "../lib/string.h"
+
+#define PDE_IDX(addr) ((addr & 0xffc00000) >> 22)
+#define PTE_IDX(addr) ((addr & 0x003ff000) >> 12)
 
 #define PG_SIZE 4096
 #define MEM_BITMAP_BASE 0xc009a000
@@ -16,6 +23,107 @@ struct pool{
 struct pool kernel_pool, user_pool;		// 内核物理内存池，用户物理内存池
 struct virtual_addr kernel_vaddr;		// 内核虚拟内存池
 
+
+/* 在pf 表示的虚拟内存池中申请pg_cnt个虚拟页 */
+/* 返回申请的虚拟内存的虚拟起始地址 */
+static void* vaddr_get(enum pool_flags pf, uint32_t pg_cnt)
+{
+	int vaddr_start = 0, bit_idx_start = -1;
+	uint32_t cnt = 0;
+	if (pf == PF_KERNEL){		// 内核虚拟内存池中申请内存
+		bit_idx_start = bitmap_scan(&kernel_vaddr.vaddr_bitmap, pg_cnt);
+		if (bit_idx_start == -1){
+			return NULL;
+		}
+		while(cnt < pg_cnt){
+			bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt++, 1);		// 把位图相应位置1
+		}
+		vaddr_start = kernel_vaddr.vaddr_start + bit_idx_start * PG_SIZE;
+	}
+	else{	// 用户虚拟内存池中申请内存
+		
+	}
+	return vaddr_start;	
+}
+
+/* 得到虚拟地址 vaddr 对应的 pte 指针 */
+uint32_t* pte_ptr(uint32_t vaddr)
+{
+	uint32_t*pte = (uint32_t*)(0xffc00000 + ((vaddr & 0xffc00000) >> 10) + PTE_IDX(vaddr) * 4);
+	return pte;
+}
+
+/* 得到虚拟地址 vaddr 对应的 pde 指针 */
+uint32_t* pde_ptr(uint32_t vaddr)
+{
+	uint32_t* pde = (uint32_t*)(0xfffff000 + PDE_IDX(vaddr) * 4);
+	return pde;
+}
+/* 物理内存池中申请 1 个物理页，返回物理地址 */
+static void* palloc(struct pool* m_pool)
+{
+	int bit_idx = bitmap_scan(&m_pool->pool_bitmap, 1);
+	if (bit_idx == -1){
+		return NULL;
+	}
+	bitmap_set(&m_pool->pool_bitmap, bit_idx, 1);
+	uint32_t page_phyaddr = (m_pool->phy_addr_start + (bit_idx * PG_SIZE));
+	return (void*)page_phyaddr;
+}
+
+static void page_table_add(void* _vaddr, void* _page_phyaddr)
+{
+	uint32_t vaddr = (uint32_t)_vaddr, page_phyaddr = (uint32_t)_page_phyaddr;
+	uint32_t* pde = pde_ptr(vaddr);
+	uint32_t* pte = pte_ptr(vaddr);
+	
+	if (*pde & 0x00000001){					// 判断页目录项中的 P 位，看页表是否存在
+		ASSERT(!(*pte & 0x00000001));		// 页表项不能存在
+		if (!(*pte & 0x00000001)){
+			*pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		}else{
+			// 应该不会执行到这里
+			put_str("\n~!@#$%^&*()~!@#$%^&*()~!@#$%^&*()\n");
+		}
+	}else{									// 页表不存在
+		uint32_t pde_phyaddr = (uint32_t)palloc(&kernel_pool);
+		*pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+		memset((void*)((int)pte & 0xfffff000), 0, PG_SIZE);
+		ASSERT(!(*pte & 0x00000001));
+		*pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
+	}
+}
+
+void* malloc_page(enum pool_flags pf, uint32_t pg_cnt)
+{
+	ASSERT(pg_cnt > 0 && pg_cnt < 3840);
+	
+	void* vaddr_start = vaddr_get(pf, pg_cnt);			// 在虚拟内存池中申请 pg_cnt 个页
+	if (vaddr_start == NULL){
+		return NULL;
+	}
+	
+	uint32_t vaddr = (uint32_t)vaddr_start, cnt = pg_cnt;
+	struct pool* mem_pool = pf & PF_KERNEL ? &kernel_pool : &user_pool;
+	while (cnt--){
+		void* page_phyaddr = palloc(mem_pool);			// 在物理内存池中申请 1 页
+		if (page_phyaddr == NULL){
+			return NULL;
+		}
+		page_table_add(vaddr, page_phyaddr);
+		vaddr += PG_SIZE;
+	}
+	return vaddr_start;
+}
+
+void* get_kernel_pages(uint32_t pg_cnt)
+{
+	void* vaddr = malloc_page(PF_KERNEL, pg_cnt);
+	if (vaddr != NULL){
+		memset(vaddr, 0, pg_cnt * PG_SIZE);
+	}
+	return vaddr;
+}
 
 /* 初始化内存池，参数是物理内存的大小 */ 
 //本质就是初始化 kernel_pool, user_pool 这两个物理内存池 和 kernel_vaddr 内核虚拟内存池
