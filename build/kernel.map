@@ -19,6 +19,8 @@ Discarded input sections
                 0x0000000000000000        0x0 build/debug.o
  .note.GNU-stack
                 0x0000000000000000        0x0 build/string.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 build/bitmap.o
 
 Memory Configuration
 
@@ -36,6 +38,7 @@ LOAD build/interrupt.o
 LOAD build/io.o
 LOAD build/debug.o
 LOAD build/string.o
+LOAD build/bitmap.o
                 [!provide]                        PROVIDE (__executable_start, 0x8048000)
                 0x0000000008048094                . = (0x8048000 + SIZEOF_HEADERS)
 
@@ -100,7 +103,7 @@ LOAD build/string.o
 .plt.got
  *(.plt.got)
 
-.text           0x00000000c0001500      0xe4b
+.text           0x00000000c0001500     0x1098
  *(.text.unlikely .text.*_unlikely .text.unlikely.*)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -143,6 +146,11 @@ LOAD build/string.o
                 0x00000000c0002221                strrchr
                 0x00000000c000227f                strcat
                 0x00000000c00022e9                strchrs
+ .text          0x00000000c000234b      0x24d build/bitmap.o
+                0x00000000c000234b                bitmap_init
+                0x00000000c000236e                bitmap_scan_test
+                0x00000000c00023ae                bitmap_scan
+                0x00000000c00024e7                bitmap_set
  *(.gnu.warning)
 
 .fini
@@ -151,14 +159,15 @@ LOAD build/string.o
                 [!provide]                        PROVIDE (_etext, .)
                 [!provide]                        PROVIDE (etext, .)
 
-.rodata         0x00000000c000234c      0x398
+.rodata         0x00000000c0002598      0x403
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x00000000c000234c       0x29 build/main.o
- .rodata        0x00000000c0002375        0xc build/init.o
- *fill*         0x00000000c0002381        0x3 
- .rodata        0x00000000c0002384      0x25d build/interrupt.o
- .rodata        0x00000000c00025e1       0x3f build/debug.o
- .rodata        0x00000000c0002620       0xc4 build/string.o
+ .rodata        0x00000000c0002598       0x29 build/main.o
+ .rodata        0x00000000c00025c1        0xc build/init.o
+ *fill*         0x00000000c00025cd        0x3 
+ .rodata        0x00000000c00025d0      0x25d build/interrupt.o
+ .rodata        0x00000000c000282d       0x3f build/debug.o
+ .rodata        0x00000000c000286c       0xc4 build/string.o
+ .rodata        0x00000000c0002930       0x6b build/bitmap.o
 
 .rodata1
  *(.rodata1)
@@ -167,19 +176,21 @@ LOAD build/string.o
  *(.eh_frame_hdr)
  *(.eh_frame_entry .eh_frame_entry.*)
 
-.eh_frame       0x00000000c00026e4      0x388
+.eh_frame       0x00000000c000299c      0x418
  *(.eh_frame)
- .eh_frame      0x00000000c00026e4       0x3c build/main.o
- .eh_frame      0x00000000c0002720       0x20 build/init.o
+ .eh_frame      0x00000000c000299c       0x3c build/main.o
+ .eh_frame      0x00000000c00029d8       0x20 build/init.o
                                          0x38 (size before relaxing)
- .eh_frame      0x00000000c0002740      0x140 build/interrupt.o
+ .eh_frame      0x00000000c00029f8      0x140 build/interrupt.o
                                         0x158 (size before relaxing)
- .eh_frame      0x00000000c0002880       0x90 build/io.o
+ .eh_frame      0x00000000c0002b38       0x90 build/io.o
                                          0xa8 (size before relaxing)
- .eh_frame      0x00000000c0002910       0x1c build/debug.o
+ .eh_frame      0x00000000c0002bc8       0x1c build/debug.o
                                          0x34 (size before relaxing)
- .eh_frame      0x00000000c000292c      0x140 build/string.o
+ .eh_frame      0x00000000c0002be4      0x140 build/string.o
                                         0x158 (size before relaxing)
+ .eh_frame      0x00000000c0002d24       0x90 build/bitmap.o
+                                         0xa8 (size before relaxing)
  *(.eh_frame.*)
 
 .gcc_except_table
@@ -190,7 +201,7 @@ LOAD build/string.o
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x00000000c0003a6c                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
+                0x00000000c0003000                . = DATA_SEGMENT_ALIGN (0x1000, 0x1000)
 
 .eh_frame
  *(.eh_frame)
@@ -212,18 +223,18 @@ LOAD build/string.o
  *(.tbss .tbss.* .gnu.linkonce.tb.*)
  *(.tcommon)
 
-.preinit_array  0x00000000c0003a6c        0x0
+.preinit_array  0x00000000c0003000        0x0
                 [!provide]                        PROVIDE (__preinit_array_start, .)
  *(.preinit_array)
                 [!provide]                        PROVIDE (__preinit_array_end, .)
 
-.init_array     0x00000000c0003a6c        0x0
+.init_array     0x00000000c0003000        0x0
                 [!provide]                        PROVIDE (__init_array_start, .)
  *(SORT(.init_array.*) SORT(.ctors.*))
  *(.init_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .ctors)
                 [!provide]                        PROVIDE (__init_array_end, .)
 
-.fini_array     0x00000000c0003a6c        0x0
+.fini_array     0x00000000c0003000        0x0
                 [!provide]                        PROVIDE (__fini_array_start, .)
  *(SORT(.fini_array.*) SORT(.dtors.*))
  *(.fini_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .dtors)
@@ -256,54 +267,56 @@ LOAD build/string.o
 .got
  *(.got)
  *(.igot)
-                0x00000000c0003a6c                . = DATA_SEGMENT_RELRO_END (., (SIZEOF (.got.plt) >= 0xc)?0xc:0x0)
+                0x00000000c0003000                . = DATA_SEGMENT_RELRO_END (., (SIZEOF (.got.plt) >= 0xc)?0xc:0x0)
 
-.got.plt        0x00000000c0003a6c        0x0
+.got.plt        0x00000000c0003000        0x0
  *(.got.plt)
  *(.igot.plt)
- .igot.plt      0x00000000c0003a6c        0x0 build/main.o
+ .igot.plt      0x00000000c0003000        0x0 build/main.o
 
-.data           0x00000000c0003a6c       0xa4
+.data           0x00000000c0003000       0xa4
  *(.data .data.* .gnu.linkonce.d.*)
- .data          0x00000000c0003a6c        0x0 build/main.o
- .data          0x00000000c0003a6c       0x99 build/kernel.o
-                0x00000000c0003a81                intr_entry_table
- .data          0x00000000c0003b05        0x0 build/init.o
- *fill*         0x00000000c0003b05        0x3 
- .data          0x00000000c0003b08        0x8 build/print.o
- .data          0x00000000c0003b10        0x0 build/interrupt.o
- .data          0x00000000c0003b10        0x0 build/io.o
- .data          0x00000000c0003b10        0x0 build/debug.o
- .data          0x00000000c0003b10        0x0 build/string.o
+ .data          0x00000000c0003000        0x0 build/main.o
+ .data          0x00000000c0003000       0x99 build/kernel.o
+                0x00000000c0003015                intr_entry_table
+ .data          0x00000000c0003099        0x0 build/init.o
+ *fill*         0x00000000c0003099        0x3 
+ .data          0x00000000c000309c        0x8 build/print.o
+ .data          0x00000000c00030a4        0x0 build/interrupt.o
+ .data          0x00000000c00030a4        0x0 build/io.o
+ .data          0x00000000c00030a4        0x0 build/debug.o
+ .data          0x00000000c00030a4        0x0 build/string.o
+ .data          0x00000000c00030a4        0x0 build/bitmap.o
 
 .data1
  *(.data1)
-                0x00000000c0003b10                _edata = .
+                0x00000000c00030a4                _edata = .
                 [!provide]                        PROVIDE (edata, .)
-                0x00000000c0003b10                . = .
-                0x00000000c0003b10                __bss_start = .
+                0x00000000c00030a4                . = .
+                0x00000000c00030a4                __bss_start = .
 
-.bss            0x00000000c0003b20      0x244
+.bss            0x00000000c00030c0      0x244
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
- .bss           0x00000000c0003b20        0x0 build/main.o
- .bss           0x00000000c0003b20        0x0 build/init.o
- .bss           0x00000000c0003b20      0x108 build/interrupt.o
- .bss           0x00000000c0003c28        0x0 build/io.o
- .bss           0x00000000c0003c28        0x0 build/debug.o
- .bss           0x00000000c0003c28        0x0 build/string.o
+ .bss           0x00000000c00030c0        0x0 build/main.o
+ .bss           0x00000000c00030c0        0x0 build/init.o
+ .bss           0x00000000c00030c0      0x108 build/interrupt.o
+ .bss           0x00000000c00031c8        0x0 build/io.o
+ .bss           0x00000000c00031c8        0x0 build/debug.o
+ .bss           0x00000000c00031c8        0x0 build/string.o
+ .bss           0x00000000c00031c8        0x0 build/bitmap.o
  *(COMMON)
- *fill*         0x00000000c0003c28       0x18 
- COMMON         0x00000000c0003c40      0x124 build/interrupt.o
-                0x00000000c0003c40                intr_name
-                0x00000000c0003ce0                idt_table
-                0x00000000c0003d64                . = ALIGN ((. != 0x0)?0x4:0x1)
-                0x00000000c0003d64                . = ALIGN (0x4)
-                0x00000000c0003d64                . = SEGMENT_START ("ldata-segment", .)
-                0x00000000c0003d64                . = ALIGN (0x4)
-                0x00000000c0003d64                _end = .
+ *fill*         0x00000000c00031c8       0x18 
+ COMMON         0x00000000c00031e0      0x124 build/interrupt.o
+                0x00000000c00031e0                intr_name
+                0x00000000c0003280                idt_table
+                0x00000000c0003304                . = ALIGN ((. != 0x0)?0x4:0x1)
+                0x00000000c0003304                . = ALIGN (0x4)
+                0x00000000c0003304                . = SEGMENT_START ("ldata-segment", .)
+                0x00000000c0003304                . = ALIGN (0x4)
+                0x00000000c0003304                _end = .
                 [!provide]                        PROVIDE (end, .)
-                0x00000000c0003d64                . = DATA_SEGMENT_END (.)
+                0x00000000c0003304                . = DATA_SEGMENT_END (.)
 
 .stab
  *(.stab)
@@ -332,6 +345,7 @@ LOAD build/string.o
  .comment       0x0000000000000035       0x36 build/io.o
  .comment       0x0000000000000035       0x36 build/debug.o
  .comment       0x0000000000000035       0x36 build/string.o
+ .comment       0x0000000000000035       0x36 build/bitmap.o
 
 .debug
  *(.debug)
