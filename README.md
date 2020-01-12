@@ -75,3 +75,7 @@ mbr.S 添加读硬盘的函数，把第二扇区里的loader读到0x9000处，�
 #### 17. 内存管理
 
 申请虚拟内存、申请物理内存，添加页目录表和页表。
+
+#### 18. 实现线程
+
+添加文件 thread.h 和 thread.c ，实现中断栈、线程栈、PCB结构。并在init_thread 中初始化PCB结构、在thread_creat中初始化线程栈，thread_start中创建线程PCB。最终实现线程。

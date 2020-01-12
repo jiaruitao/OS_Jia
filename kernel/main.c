@@ -4,6 +4,9 @@
 #include "interrupt.h"
 #include "debug.h"
 #include "memory.h"
+#include "../thread/thread.h"
+
+void kthread_a(void* arg);
 
 int main(void)
 {
@@ -11,11 +14,17 @@ int main(void)
 	init_all();
 	intr_disable();
 	
-	void* addr = get_kernel_pages(3);
-	put_str("\nget_kernel_page start vaddr is ");
-	put_int((uint32_t)addr);
-	put_char('\n');
+	thread_start("k_thread_a", 31, kthread_a, "argA ");
+	
 	
 	while (1);
 	return 0;
+}
+
+void kthread_a(void* arg)
+{
+	char* para = arg;
+	while (1){
+		put_str(para);
+	}
 }
