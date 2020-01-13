@@ -4,7 +4,7 @@
 #include "../lib/kernel/io.h"
 #include "../lib/kernel/print.h"
 
-#define IDT_DESC_CNT 0x21
+#define IDT_DESC_CNT 0x30		// 支持的中断数，每个对应一个中断描述符，存在 IDT 中
 
 #define PIC_M_CTRL	0x20		// 主片 控制
 #define PIC_M_DATA	0x21		// 主片 数据
@@ -32,7 +32,7 @@ static void pic_init(void)
 	outb(PIC_S_DATA, 0x02);
 	outb(PIC_S_DATA, 0x01);
 	
-	outb(PIC_M_DATA, 0xfe);
+	outb(PIC_M_DATA, 0xfd);		// 时钟中断 0xfe ,键盘中断 0xfd 
 	outb(PIC_S_DATA, 0xff);
 	
 	put_str("  pic init done\n");

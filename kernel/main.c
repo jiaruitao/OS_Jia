@@ -16,13 +16,11 @@ int main(void)
 	init_all();
 	
 	
-	thread_start("k_thread_a", 31, kthread_a, "argA ");
-	thread_start("k_thread_b", 31, kthread_b, "argB ");
+//	thread_start("k_thread_a", 31, kthread_a, "argA ");
+//	thread_start("k_thread_b", 31, kthread_b, "argB ");
 	
 	intr_enable();
-	while (1){
-		console_put_str("Main ");
-	}
+	while (1);
 	return 0;
 }
 
