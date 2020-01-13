@@ -3,6 +3,9 @@
 #include "interrupt.h"
 #include "memory.h"
 #include "../device/timer.h"
+#include "../thread/thread.h"
+#include "../device/console.h"
+
 
 void init_all()
 {
@@ -11,6 +14,6 @@ void init_all()
 	mem_init();
 	timer_init();
 	thread_init();
-	
+	console_init();
 }
 

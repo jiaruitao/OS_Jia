@@ -2,6 +2,7 @@
 #include "list.h"
 #include "../../kernel/interrupt.h"
 
+
 /* 初始化双向链表list */
 void list_init (struct list* list) {
    list->head.prev = NULL;

@@ -5,6 +5,7 @@
 #include "debug.h"
 #include "memory.h"
 #include "../thread/thread.h"
+#include "../device/console.h"
 
 void kthread_a(void* arg);
 void kthread_b(void* arg);
@@ -20,7 +21,7 @@ int main(void)
 	
 	intr_enable();
 	while (1){
-		put_str("Main ");
+		console_put_str("Main ");
 	}
 	return 0;
 }
@@ -29,7 +30,7 @@ void kthread_a(void* arg)
 {
 	char* para = arg;
 	while (1){
-		put_str(para);
+		console_put_str(para);
 	}
 }
 
@@ -37,6 +38,6 @@ void kthread_b(void* arg)
 {
 	char* para = arg;
 	while (1){
-		put_str(para);
+		console_put_str(para);
 	}
 }
