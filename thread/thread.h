@@ -3,8 +3,8 @@
 
 #include "../lib/std_int.h"
 #include "../lib/kernel/list.h"
-
-
+#include "../kernel/memory.h"
+#include "../lib/kernel/bitmap.h"
 
 
 typedef void thread_func(void*);
@@ -64,13 +64,21 @@ struct task_struct{
 	struct list_elem general_tag;
 	struct list_elem all_list_tag;
 	uint32_t* pgdir;
+	struct virtual_addr userprog_vaddr;
 	uint32_t stack_magic;		// 栈的标记，检测溢出
 };
+
+
+extern struct list thread_ready_list;
+extern struct list thread_all_list;
+
 
 struct task_struct* thread_start(char* name, int prio, thread_func* function, void* func_arg);
 struct task_struct* running_thread(void);
 void schedule(void);
 void thread_init(void);
+void init_thread(struct task_struct* pthread, char* name, int prio);		// 初始化PCB 结构
+void thread_creat(struct task_struct* pthread, thread_func* function, void* func_arg);	// 初始化线程栈
 void thread_block(enum task_status stat);
 void thread_unblock(struct task_struct* pthread);
 

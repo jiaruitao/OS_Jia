@@ -32,7 +32,7 @@ static void pic_init(void)
 	outb(PIC_S_DATA, 0x02);
 	outb(PIC_S_DATA, 0x01);
 	
-	outb(PIC_M_DATA, 0xfd);		// 时钟中断 0xfe ,键盘中断 0xfd 
+	outb(PIC_M_DATA, 0xfc);		// 时钟中断 0xfe;  键盘中断 0xfd;  时钟和键盘中断全开 0xfc 
 	outb(PIC_S_DATA, 0xff);
 	
 	put_str("  pic init done\n");

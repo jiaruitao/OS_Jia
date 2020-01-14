@@ -102,4 +102,14 @@ mbr.S 添加读硬盘的函数，把第二扇区里的loader读到0x9000处，�
 
 #### 24. 实现 tss
 
-定义 tss结构体，并初始化放在 GDT中。重新加载 GDTR，加载 TR.
+定义 tss结构体，并初始化放在 GDT中。重新加载 GDTR，加载 TR。
+
+#### 25. 实现用户进程
+
+- 创建进程
+
+  在内核空间申请 1 页做进程PCB，调用init_thread初始化进程PCB，再在内核空间申请 n 页做用户虚拟地址位图，调用thread_creat初始化PCB中的线程栈，最后加入到就绪队列和全部队列中。
+
+- 执行进程
+
+  中断发生，执行到schedule，在schedule里激活页表，调用swith_to，最终执行kernel_thread，kernel_thread又调用start_process， start_process里设置中断栈，最后跳转到intr_exit执行。模拟中断返回进入到特权级更低的用户进程。
