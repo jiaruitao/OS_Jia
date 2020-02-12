@@ -123,3 +123,18 @@ mbr.S 添加读硬盘的函数，把第二扇区里的loader读到0x9000处，�
 实现步骤：修改中断调用表IDT，实现宏_syscall0、 _syscall1、 _syscall2、 _syscall3，建立系统调用子功能表syscall_table。
 
 系统调用发生的过程：在用户进程下，调用函数getpid(), getpid()调用宏_syscall0(SYS_GETPID)，宏就执行int 0x80中断，在中断处理函数中会调用syscall_table中的函数。
+
+
+
+#### 27.实现printf
+
+printf是可变参数的格式化输出函数。
+
+主要有两个函数封装而成，vsprintf()和write()，
+
+vsprintf()负责把printf的第一个参数字符串中的%d、%s、%c……给替换成真正的样子，格式化嘛。
+
+write()是系统调用函数，负责把格式化后的字符串打印输出到屏幕上。
+
+
+

@@ -12,7 +12,8 @@ OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/init.o $(BUILD_DIR
 		$(BUILD_DIR)/memory.o $(BUILD_DIR)/bitmap.o $(BUILD_DIR)/thread.o $(BUILD_DIR)/list.o \
 		$(BUILD_DIR)/syscall.o $(BUILD_DIR)/syscall-init.o \
 		$(BUILD_DIR)/timer.o $(BUILD_DIR)/switch.o $(BUILD_DIR)/console.o $(BUILD_DIR)/sync.o \
-		$(BUILD_DIR)/keyboard.o $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o 
+		$(BUILD_DIR)/keyboard.o $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o \
+		$(BUILD_DIR)/stdio.o
 
 ############   C 代码编译  #################
 $(BUILD_DIR)/main.o: kernel/main.c kernel/interrupt.c kernel/init.c
@@ -68,6 +69,9 @@ $(BUILD_DIR)/syscall.o: lib/user/syscall.c lib/user/syscall.h
 	
 $(BUILD_DIR)/syscall-init.o: userprog/syscall-init.c userprog/syscall-init.h
 	$(CC) $(CFLAGS) $< -o $@
+	
+$(BUILD_DIR)/stdio.o: lib/stdio.c lib/stdio.h
+	$(CC) $(CFLAGS) -fno-stack-protector $< -o $@
 
 ############   汇编代码编译  #################
 $(BUILD_DIR)/print.o: lib/kernel/print.S
