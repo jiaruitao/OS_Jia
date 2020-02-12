@@ -4,7 +4,7 @@
 #include "../lib/kernel/io.h"
 #include "../lib/kernel/print.h"
 
-#define IDT_DESC_CNT 0x30		// 支持的中断数，每个对应一个中断描述符，存在 IDT 中
+#define IDT_DESC_CNT 0x81		// 支持的中断数，每个对应一个中断描述符，存在 IDT 中
 
 #define PIC_M_CTRL	0x20		// 主片 控制
 #define PIC_M_DATA	0x21		// 主片 数据
@@ -15,6 +15,7 @@
 #define GET_EFLAGS(EFLAG_VAR) asm volatile ("pushfl; popl %0" : "=g" (EFLAG_VAR))
 
 extern void lodidt(uint16_t, uint32_t);
+extern uint32_t syscall_handler(void);
 
 
 /* ******************** 初始化 8259A *********************************/
@@ -65,10 +66,11 @@ static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler 
 
 static void idt_desc_init(void)
 {
-	int i = 0;
+	int i = 0, lastindex = IDT_DESC_CNT - 1;
 	for (i = 0; i < IDT_DESC_CNT; i++){
 		make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
 	}
+	make_idt_desc(&idt[lastindex], IDT_DESC_ATTR_DPL3, syscall_handler);
 	put_str(" idt_desc_init\n");
 }
 

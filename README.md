@@ -113,3 +113,13 @@ mbr.S 添加读硬盘的函数，把第二扇区里的loader读到0x9000处，�
 - 执行进程
 
   中断发生，执行到schedule，在schedule里激活页表，调用swith_to，最终执行kernel_thread，kernel_thread又调用start_process， start_process里设置中断栈，最后跳转到intr_exit执行。模拟中断返回进入到特权级更低的用户进程。
+
+#### 26.实现系统调用getpid()
+
+仿照Linux中的系统调用，用软中断的方式实现系统调用。
+
+所有的系统调用都占用一个中断号——0x80。
+
+实现步骤：修改中断调用表IDT，实现宏_syscall0、 _syscall1、 _syscall2、 _syscall3，建立系统调用子功能表syscall_table。
+
+系统调用发生的过程：在用户进程下，调用函数getpid(), getpid()调用宏_syscall0(SYS_GETPID)，宏就执行int 0x80中断，在中断处理函数中会调用syscall_table中的函数。
