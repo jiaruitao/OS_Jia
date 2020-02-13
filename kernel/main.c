@@ -41,8 +41,9 @@ int main(void)
 /* 在线程中运行的函数 */
 void k_thread_a(void* arg) {     
    char* para = arg;
-   console_put_str(" thread_a_pid:0x");
-   console_put_int(sys_getpid());
+   void* addr = sys_malloc(63);
+   console_put_str(" thread_a ,sys_malloc(63),addr is :0x");
+   console_put_int((int)addr);
    console_put_char('\n');
    
    while(1);
@@ -51,8 +52,9 @@ void k_thread_a(void* arg) {
 /* 在线程中运行的函数 */
 void k_thread_b(void* arg) {     
    char* para = arg;
-   console_put_str(" thread_b_pid:0x");
-   console_put_int(sys_getpid());
+   void* addr = sys_malloc(33);
+   console_put_str(" thread_b ,sys_malloc(33),addr is :0x");
+   console_put_int((int)addr);
    console_put_char('\n');
    
    while(1);
@@ -68,7 +70,7 @@ void u_prog_a(void) {
 
 /* 测试用户进程 */
 void u_prog_b(void) {
-	char* name = "u_prog_a";
+	char* name = "u_prog_b";
 	printf(" I am %s, my pid: %d ", name, getpid());
 	while(1);
 }

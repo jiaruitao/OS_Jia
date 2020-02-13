@@ -103,7 +103,7 @@ void process_execute(void* filename, char* name)
 	create_user_vaddr_bitmap(thread);
 	thread_creat(thread, start_process, filename);			// 初始化线程栈
 	thread->pgdir = create_page_dir();						// 创建页目录表
-
+	block_desc_init(thread->u_block_desc);
 	
 	enum intr_status old_status = intr_disable();
 	ASSERT(!elem_find(&thread_ready_list, &thread->general_tag));
