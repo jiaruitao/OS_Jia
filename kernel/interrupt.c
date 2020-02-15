@@ -33,8 +33,8 @@ static void pic_init(void)
 	outb(PIC_S_DATA, 0x02);
 	outb(PIC_S_DATA, 0x01);
 	
-	outb(PIC_M_DATA, 0xfc);		// 时钟中断 0xfe;  键盘中断 0xfd;  时钟和键盘中断全开 0xfc 
-	outb(PIC_S_DATA, 0xff);
+	outb(PIC_M_DATA, 0xf8);		// 时钟中断 IRQ0;  键盘中断 IRQ1;  级联 IRQ2, 全部打开 
+	outb(PIC_S_DATA, 0xbf);		// 打开 IRQ14
 	
 	put_str("  pic init done\n");
 }

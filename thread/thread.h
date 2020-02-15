@@ -84,6 +84,6 @@ void init_thread(struct task_struct* pthread, char* name, int prio);		// 初始�
 void thread_creat(struct task_struct* pthread, thread_func* function, void* func_arg);	// 初始化线程栈
 void thread_block(enum task_status stat);
 void thread_unblock(struct task_struct* pthread);
-
+void thread_yield(void);
 
 #endif
