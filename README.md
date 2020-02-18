@@ -167,3 +167,7 @@ sys_free()函数是分情况来释放内存，不仅能释放大内存——页�
 #### 32.硬盘驱动
 
 实现硬盘驱动程序，实现 ide_init 硬盘初始化、ide_read 从硬盘读数据、ide_write 写数据到硬盘。
+
+#### 33.创建文件系统
+
+创建 fs 目录，添加文件 fs.c、 fs.h、 inode .h、 super_block.h、 dir.h。
